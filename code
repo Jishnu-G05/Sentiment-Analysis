@@ -1,0 +1,43 @@
+import pandas as pd
+from textblob import TextBlob
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+
+# Ensure required resources are downloaded
+nltk.download('vader_lexicon')
+
+# Sample dataset (replace with tweets, reviews, etc.)
+data = {
+    'text': [
+        "I love this product! It's amazing.",
+        "Terrible customer service, very disappointed.",
+        "It's okay, not the best, not the worst.",
+        "Absolutely fantastic experience!",
+        "I hate it. Worst ever."
+    ]
+}
+df = pd.DataFrame(data)
+
+# Initialize VADER sentiment analyzer
+sia = SentimentIntensityAnalyzer()
+
+# Function to apply both TextBlob and VADER
+def analyze_sentiment(text):
+    blob = TextBlob(text)
+    vader_score = sia.polarity_scores(text)['compound']
+    return pd.Series({
+        'TextBlob_Polarity': blob.polarity,
+        'VADER_Compound': vader_score,
+        'Sentiment': (
+            'Positive' if vader_score > 0.2 else
+            'Negative' if vader_score < -0.2 else
+            'Neutral'
+        )
+    })
+
+# Apply sentiment analysis
+sentiment_results = df['text'].apply(analyze_sentiment)
+df = pd.concat([df, sentiment_results], axis=1)
+
+# Show result
+print(df)
